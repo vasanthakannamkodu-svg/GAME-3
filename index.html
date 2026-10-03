@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Psychology Theory Challenge</title>
+<style>
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: "Times New Roman", Times, serif;
+  background: linear-gradient(160deg, #0f2c52 0%, #174a7e 45%, #4a3b78 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  color: #263238;
+  -webkit-user-select: none;
+  user-select: none;
+}
+/* ---------- MOBILE-FIRST STAGE ---------- */
+.stage {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding: 10px 10px 28px;
+}
+@media (min-width: 520px) {
+  body { display: flex; justify-content: center; align-items: flex-start; }
+  .stage {
+    margin: 16px 0;
+    border-radius: 22px;
+    box-shadow: 0 18px 50px rgba(0,0,0,.45);
+    background: linear-gradient(160deg, #10345d, #1a4f86 60%, #513d80);
+    padding: 14px 14px 28px;
+  }
+}
+header {
+  text-align: center;
+  color: #fff;
+  padding: 14px 8px 10px;
+}
+h1 {
+  margin: 0 0 3px;
+  font-size: clamp(22px, 6.2vw, 30px);
+  letter-spacing: .5px;
+  text-shadow: 0 2px 8px rgba(0,0,0,.4);
+}
+.subtitle {
+  font-size: clamp(13px, 3.6vw, 16px);
+  font-style: italic;
+  color: #cfe3ff;
+}
+.scoreboard {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  flex-wrap: nowrap;
+  background: rgba(255,255,255,.96);
+  padding: 10px 8px;
+  border-radius: 12px;
+  font-size: clamp(12px, 3.3vw, 15px);
+  font-weight: bold;
+  margin: 8px 0;
+  box-shadow: 0 3px 10px rgba(0,0,0,.25);
+}
+.scoreboard div { text-align: center; flex: 1; }
+.scoreboard span { color: #1565c0; }
+.levels {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.level-btn {
+  flex: 1;
+  padding: 9px 2px;
+  border: 0;
+  border-radius: 9px;
+  background: #b0bec5;
+  font-family: inherit;
+  font-size: clamp(11px, 3vw, 13px);
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform .12s;
+}
+.level-btn:active { transform: scale(.96); }
+.level-btn.active { background: #ffb300; color: #3e2723; box-shadow: 0 2px 8px rgba(255,179,0,.5); }
+.level-btn:disabled { opacity: .45; cursor: not-allowed; }
+.instructions {
+  background: #fffde7;
+  border-left: 4px solid #f9a825;
+  padding: 9px 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-size: clamp(13px, 3.5vw, 15px);
+  line-height: 1.35;
+}
+/* ---------- GAME AREA (stacked = fits all content on mobile) ---------- */
+.game-area { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: start; }
+.panel {
+  background: rgba(255,255,255,.97);
+  border-radius: 14px;
+  padding: 8px 7px 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,.2);
+}
+.panel h2 {
+  text-align: center;
+  color: #174a7e;
+  margin: 2px 0 6px;
+  font-size: clamp(14px, 4vw, 18px);
+}
+.card {
+  background: linear-gradient(180deg, #e8f1fa, #d3e5f7);
+  border: 2px solid #90caf9;
+  border-radius: 10px;
+  padding: 10px 8px;
+  margin: 6px 0;
+  cursor: grab;
+  font-size: clamp(11.5px, 3.2vw, 15px);
+  line-height: 1.25;
+  font-weight: bold;
+  color: #0d3c63;
+  touch-action: manipulation;
+  transition: transform .12s, box-shadow .12s;
+}
+.card:active { transform: scale(.97); }
+.card.selected {
+  border: 3px solid #ff9800;
+  background: #fff3e0;
+  box-shadow: 0 0 0 3px rgba(255,152,0,.25);
+}
+.card.matched { background: #e8f5e9; border-color: #43a047; color: #1b5e20; cursor: default; animation: pop .35s; }
+.dropzone {
+  background: #fafafa;
+  border: 2px dashed #90a4ae;
+  border-radius: 10px;
+  padding: 7px 7px;
+  margin: 6px 0;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+}
+.dropzone.over { background: #e3f2fd; border-color: #1565c0; }
+.dropzone.correct { border: 2px solid #43a047; background: #e8f5e9; }
+.dropzone.shake { animation: shake .4s; border-color: #e53935; background: #ffebee; }
+.question-text { font-size: clamp(11px, 3.1vw, 14px); font-weight: bold; line-height: 1.25; word-wrap: break-word; }
+.result {
+  margin-top: 4px;
+  font-size: clamp(10.5px, 2.9vw, 13px);
+  font-style: italic;
+  color: #546e7a;
+  word-wrap: break-word;
+}
+.dropzone.correct .result { color: #2e7d32; font-weight: bold; font-style: normal; }
+.feedback {
+  min-height: 30px;
+  margin-top: 10px;
+  font-size: clamp(13.5px, 3.8vw, 16px);
+  font-weight: bold;
+  text-align: center;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: rgba(0,0,0,.25);
+}
+.feedback.good { background: rgba(46,125,50,.85); animation: pop .3s; }
+.feedback.bad  { background: rgba(198,40,40,.85); animation: shake .4s; }
+button.action {
+  background: linear-gradient(180deg, #43a047, #2e7d32);
+  color: #fff;
+  border: 0;
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-family: inherit;
+  font-size: clamp(15px, 4.2vw, 17px);
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,.3);
+  transition: transform .12s;
+}
+button.action:active { transform: scale(.95); }
+button.action:disabled { background: #9e9e9e; box-shadow: none; cursor: not-allowed; }
+.controls { text-align: center; margin-top: 12px; }
+.controls .action.secondary { background: linear-gradient(180deg, #607d8b, #455a64); margin-left: 6px; }
+.completion {
+  display: none;
+  text-align: center;
+  background: linear-gradient(180deg, #f1fff3, #d7f0db);
+  border: 2px solid #43a047;
+  border-radius: 14px;
+  padding: 16px;
+  margin-top: 12px;
+  font-size: clamp(15px, 4.2vw, 18px);
+  animation: pop .4s;
+}
+.completion h2 { color: #1b5e20; margin: 0 0 6px; }
+.sound-toggle {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 99;
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  border: 0;
+  background: rgba(255,255,255,.92);
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(0,0,0,.3);
+}
+@keyframes pop {
+  0% { transform: scale(.85); }
+  60% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+</style>
+<base target="_blank">
+</head>
+<body>
+
+<button class="sound-toggle" id="soundBtn" onclick="toggleSound()" aria-label="Toggle sound">🔊</button>
+
+<div class="stage">
+  <header>
+    <h1>🧠 Psychology Theory Challenge</h1>
+    <div class="subtitle">KTET Model Question Game</div>
+  </header>
+
+  <div class="scoreboard">
+    <div>Level: <span id="levelDisplay">1</span>/3</div>
+    <div>Score: <span id="score">0</span>/150</div>
+    <div>Matches: <span id="matches">0</span>/5</div>
+  </div>
+
+  <div class="levels">
+    <button class="level-btn active" id="levelBtn0" onclick="showLevel(0)">L1: Freud</button>
+    <button class="level-btn" id="levelBtn1" disabled onclick="showLevel(1)">L2: Erikson</button>
+    <button class="level-btn" id="levelBtn2" disabled onclick="showLevel(2)">L3: Kohlberg</button>
+  </div>
+
+  <div class="instructions">
+    <strong>How to play:</strong> Tap an answer card, then tap the matching question.
+    (You can also drag on desktop.) Correct = +10 points. Finish all 5 to unlock the next level.
+  </div>
+
+  <div class="game-area">
+    <section class="panel">
+      <h2>❓ Questions</h2>
+      <div id="questions"></div>
+    </section>
+    <section class="panel">
+      <h2>🃏 Answer Cards</h2>
+      <div id="answers"></div>
+    </section>
+  </div>
+
+  <div class="feedback" id="feedback" aria-live="polite">Tap a card to begin!</div>
+
+  <div class="controls">
+    <button class="action" id="nextBtn" onclick="nextLevel()" disabled>Next Level ➜</button>
+    <button class="action secondary" onclick="restartGame()">↺ Restart</button>
+  </div>
+
+  <div class="completion" id="completion">
+    <h2>🏆 Congratulations!</h2>
+    <p>You have completed all three levels.</p>
+    <p>Your final score: <strong id="finalScore">0</strong> / 150</p>
+  </div>
+</div>
+
+<audio id="bgMusic" src="music.mp3" loop preload="auto"></audio>
+<audio id="applause" src="applause.mp3" preload="auto"></audio>
+<audio id="error" src="error.mp3" preload="auto"></audio>
+
+<script>
+const levels = [
+  {
+    title: "Sigmund Freud – Psychoanalytic Theory",
+    questions: [
+      "Who is known as the founder of psychoanalytic theory?",
+      "Which part of personality operates according to the pleasure principle?",
+      "Which psychosexual stage is associated with toilet training?",
+      "The Oedipus complex is associated with which psychosexual stage?",
+      "Which part of personality operates according to the reality principle?"
+    ],
+    answers: [
+      "Sigmund Freud",
+      "Id",
+      "Anal stage",
+      "Phallic stage",
+      "Ego"
+    ],
+    explanations: [
+      "Sigmund Freud developed psychoanalytic theory.",
+      "The Id seeks immediate satisfaction and follows the pleasure principle.",
+      "The anal stage focuses on control over bowel and bladder functions.",
+      "Freud associated the Oedipus complex with the phallic stage.",
+      "The Ego follows the reality principle and mediates between the Id and external reality."
+    ]
+  },
+  {
+    title: "Erik Erikson – Psychosocial Theory",
+    questions: [
+      "Who proposed the eight stages of psychosocial development?",
+      "What is the major psychosocial conflict during adolescence?",
+      "Which conflict is associated with the school-age period?",
+      "What is the major conflict during young adulthood?",
+      "Which virtue is associated with the stage of identity versus role confusion?"
+    ],
+    answers: [
+      "Erik Erikson",
+      "Identity vs. Role Confusion",
+      "Industry vs. Inferiority",
+      "Intimacy vs. Isolation",
+      "Fidelity"
+    ],
+    explanations: [
+      "Erik Erikson proposed the theory of psychosocial development.",
+      "Adolescents explore who they are and develop a sense of identity.",
+      "School-age children develop competence through learning and achievement.",
+      "Young adults seek close relationships and meaningful connections.",
+      "Fidelity refers to commitment and loyalty to an identity and personal values."
+    ]
+  },
+  {
+    title: "Lawrence Kohlberg – Moral Development Theory",
+    questions: [
+      "Who developed the theory of moral development based on levels and stages?",
+      "Which stage focuses on avoiding punishment?",
+      "Which stage is guided by the desire to gain approval from others?",
+      "Which stage emphasizes law, duty, and maintaining social order?",
+      "Which stage recognizes individual rights and social agreements?"
+    ],
+    answers: [
+      "Lawrence Kohlberg",
+      "Stage 1: Obedience and Punishment Orientation",
+      "Stage 3: Good Interpersonal Relationships",
+      "Stage 4: Maintaining Social Order",
+      "Stage 5: Social Contract and Individual Rights"
+    ],
+    explanations: [
+      "Lawrence Kohlberg proposed a stage theory of moral reasoning.",
+      "At Stage 1, actions are judged largely by their consequences, especially punishment.",
+      "At Stage 3, people seek approval and try to be seen as good by others.",
+      "At Stage 4, people emphasize rules, laws, and social responsibility.",
+      "At Stage 5, laws are understood in relation to rights and broader social agreements."
+    ]
+  }
+];
+
+let currentLevel = 0;
+let score = 0;
+let completed = [false, false, false];
+let selectedAnswer = null;
+let matched = [];
+let shuffledAnswers = [];
+let soundOn = true;
+
+/* ================= AUDIO SYSTEM ================= */
+/* Plays mp3 if available; otherwise synthesizes a fallback tone */
+let audioCtx = null;
+function ctx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === "suspended") audioCtx.resume();
+  return audioCtx;
+}
+function tone(freq, dur, type, vol, when) {
+  const ac = ctx();
+  const o = ac.createOscillator();
+  const g = ac.createGain();
+  o.type = type || "sine";
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.15, ac.currentTime + (when || 0));
+  g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + (when || 0) + dur);
+  o.connect(g).connect(ac.destination);
+  o.start(ac.currentTime + (when || 0));
+  o.stop(ac.currentTime + (when || 0) + dur);
+}
+function playBGM() {
+  const m = document.getElementById("bgMusic");
+  if (m) { m.volume = 0.35; m.play().catch(() => {}); }
+}
+function playApplause() {
+  const a = document.getElementById("applause");
+  let played = false;
+  if (a) { a.currentTime = 0; a.volume = 0.8; played = a.play().then(() => true).catch(() => false); }
+  Promise.resolve(played).then(ok => { if (!ok && soundOn) { tone(660,.15,"sine",.18,0); tone(880,.2,"sine",.18,.12); tone(1100,.3,"sine",.18,.26); } });
+}
+function playError() {
+  const e = document.getElementById("error");
+  let played = false;
+  if (e) { e.currentTime = 0; e.volume = 0.8; played = e.play().then(() => true).catch(() => false); }
+  Promise.resolve(played).then(ok => { if (!ok && soundOn) { tone(220,.2,"sawtooth",.12,0); tone(160,.3,"sawtooth",.12,.15); } });
+}
+function toggleSound() {
+  soundOn = !soundOn;
+  document.getElementById("soundBtn").textContent = soundOn ? "🔊" : "🔇";
+  const m = document.getElementById("bgMusic");
+  if (m) { soundOn ? (m.volume = 0.35, m.play().catch(() => {})) : m.pause(); }
+}
+document.addEventListener("pointerdown", () => playBGM(), { once: true });
+
+function shuffle(array) {
+  const copy = [...array];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+function setFeedback(msg, cls) {
+  const f = document.getElementById("feedback");
+  f.textContent = msg;
+  f.className = "feedback" + (cls ? " " + cls : "");
+}
+
+function showLevel(index) {
+  if (index > 0 && !completed[index - 1]) return;
+  currentLevel = index;
+  selectedAnswer = null;
+  matched = [];
+  shuffledAnswers = shuffle(levels[index].answers.map((answer, i) => ({
+    text: answer,
+    originalIndex: i
+  })));
+
+  document.getElementById("levelDisplay").textContent = index + 1;
+  document.getElementById("matches").textContent = "0";
+  setFeedback("Level " + (index + 1) + ": " + levels[index].title);
+  document.getElementById("nextBtn").disabled = true;
+  document.getElementById("completion").style.display = "none";
+
+  document.querySelectorAll(".level-btn").forEach((btn, i) => {
+    btn.classList.toggle("active", i === index);
+  });
+
+  renderGame();
+}
+
+function renderGame() {
+  const data = levels[currentLevel];
+  const questionsDiv = document.getElementById("questions");
+  const answersDiv = document.getElementById("answers");
+  questionsDiv.innerHTML = "";
+  answersDiv.innerHTML = "";
+
+  data.questions.forEach((question, i) => {
+    const zone = document.createElement("div");
+    zone.className = "dropzone";
+    zone.id = "zone" + i;
+    zone.tabIndex = 0;
+    zone.setAttribute("role", "button");
+    zone.setAttribute("aria-label", "Question " + (i + 1) + ": " + question);
+
+    const q = document.createElement("div");
+    q.className = "question-text";
+    q.textContent = (i + 1) + ". " + question;
+    zone.appendChild(q);
+
+    const result = document.createElement("div");
+    result.className = "result";
+    result.textContent = matched[i] !== undefined
+      ? "✅ " + data.answers[matched[i]]
+      : "Tap a card, then tap here";
+    zone.appendChild(result);
+
+    if (matched[i] !== undefined) zone.classList.add("correct");
+
+    zone.addEventListener("dragover", e => {
+      if (matched[i] === undefined) { e.preventDefault(); zone.classList.add("over"); }
+    });
+    zone.addEventListener("dragleave", () => zone.classList.remove("over"));
+    zone.addEventListener("drop", e => {
+      e.preventDefault();
+      zone.classList.remove("over");
+      const answerIndex = Number(e.dataTransfer.getData("answerIndex"));
+      checkAnswer(i, answerIndex);
+    });
+    zone.addEventListener("click", () => {
+      if (selectedAnswer !== null) {
+        checkAnswer(i, selectedAnswer);
+      }
+    });
+    questionsDiv.appendChild(zone);
+  });
+
+  shuffledAnswers.forEach((answer) => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.textContent = answer.text;
+    card.draggable = true;
+    card.tabIndex = 0;
+    card.dataset.originalIndex = answer.originalIndex;
+
+    const isUsed = matched.includes(answer.originalIndex);
+    if (isUsed) {
+      card.classList.add("matched");
+      card.draggable = false;
+      card.textContent += " ✓";
+    } else {
+      card.addEventListener("dragstart", e => {
+        e.dataTransfer.setData("answerIndex", String(answer.originalIndex));
+      });
+      card.addEventListener("click", () => {
+        document.querySelectorAll(".card").forEach(c => c.classList.remove("selected"));
+        selectedAnswer = answer.originalIndex;
+        card.classList.add("selected");
+        setFeedback("Selected: " + answer.text + " — now tap a question!");
+      });
+    }
+    answersDiv.appendChild(card);
+  });
+}
+
+function checkAnswer(questionIndex, answerIndex) {
+  if (matched[questionIndex] !== undefined || answerIndex === null) return;
+
+  const data = levels[currentLevel];
+
+  if (questionIndex === answerIndex) {
+    matched[questionIndex] = answerIndex;
+    score += 10;
+    document.getElementById("score").textContent = score;
+    document.getElementById("matches").textContent = matched.length;
+    playApplause();
+    setFeedback("✅ Correct! " + data.explanations[questionIndex], "good");
+    renderGame();
+
+    if (matched.length === 5) {
+      completed[currentLevel] = true;
+      document.getElementById("nextBtn").disabled = false;
+      setFeedback("🎉 Level completed! " + data.title, "good");
+      if (currentLevel === 2) {
+        document.getElementById("completion").style.display = "block";
+        document.getElementById("finalScore").textContent = score;
+        document.getElementById("nextBtn").disabled = true;
+      } else {
+        document.getElementById("levelBtn" + (currentLevel + 1)).disabled = false;
+      }
+    }
+  } else {
+    playError();
+    setFeedback("❌ Incorrect match. Try again!", "bad");
+    const zone = document.getElementById("zone" + questionIndex);
+    if (zone) {
+      zone.classList.add("shake");
+      setTimeout(() => zone.classList.remove("shake"), 450);
+    }
+  }
+
+  selectedAnswer = null;
+  document.querySelectorAll(".card").forEach(c => c.classList.remove("selected"));
+}
+
+function nextLevel() {
+  if (currentLevel < 2 && completed[currentLevel]) showLevel(currentLevel + 1);
+}
+
+function restartGame() {
+  currentLevel = 0;
+  score = 0;
+  completed = [false, false, false];
+  selectedAnswer = null;
+  matched = [];
+  document.getElementById("score").textContent = "0";
+  document.getElementById("levelBtn1").disabled = true;
+  document.getElementById("levelBtn2").disabled = true;
+  showLevel(0);
+}
+
+showLevel(0);
+</script>
+</body>
+</html>
